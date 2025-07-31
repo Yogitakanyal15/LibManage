@@ -1,5 +1,6 @@
 from main import getconnection
 from colorama import Fore, Style
+from tabulate import tabulate
 
 db = getconnection()
 cursor = db.cursor()
@@ -124,6 +125,64 @@ def updatebook():
 
     print(Fore.MAGENTA + "THANK YOU!")
 
-addbook()
+
+def viewbooks():
+    ch = 'y'
+
+    while ch == 'y' or ch == 'Y':
+        print("""Choose:
+1. View All
+2. View by name""")
+        ip = input(Fore.BLUE + "Enter your choice: ")
+        if ip == '1':
+            query = "SELECT * FROM books"
+            cursor.execute(query)
+            result = cursor.fetchall()
+            if result:
+                headers = [i[0] for i in cursor.description]
+                print(tabulate(result, headers=headers, tablefmt="grid"))
+            else:
+                print(Fore.RED + "No books found.")
+
+        elif ip == '2':
+            print("""Choose:
+1. View by title
+2. View by author name
+3. View by genre""")
+            choice = input(Fore.BLUE + "Enter your choice: ")
+            if choice == '1':
+                name = input(Fore.BLUE + "Enter the book name or title: ").strip().lower()
+                query = "SELECT * FROM books WHERE LOWER(TRIM(title)) = %s"
+                cursor.execute(query, (name,))
+            elif choice == '2':
+                name = input(Fore.BLUE + "Enter the author name: ").strip().lower()
+                query = "SELECT * FROM books WHERE LOWER(TRIM(author)) = %s"
+                cursor.execute(query, (name,))
+            elif choice == '3':
+                name = input(Fore.BLUE + "Enter the genre: ").strip().lower()
+                query = "SELECT * FROM books WHERE LOWER(TRIM(genre)) = %s"
+                cursor.execute(query, (name,))
+            else:
+                print(Fore.RED + "Invalid choice")
+                result = []
+
+            result = cursor.fetchall()
+            if result:
+                headers = [i[0] for i in cursor.description]
+                print(tabulate(result, headers=headers, tablefmt="grid"))
+            else:
+                print(Fore.RED + "No books found.")
+
+        else:
+            print(Fore.RED + "Invalid choice")
+
+        ch = input(Fore.BLUE + "Do you want to view more? (Type Y or y for yes): ").strip()
+
+    print(Fore.MAGENTA + "THANK YOU!")
+
+
+
+
+viewbooks()
 cursor.close()
 db.close()
